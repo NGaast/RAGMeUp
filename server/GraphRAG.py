@@ -9,7 +9,9 @@ from langchain_community.graphs.networkx_graph import NetworkxEntityGraph
 
 class GraphRAG:
 
-    def __init__(self):
+    def __init__(self, logger):
+        self.logger = logger
+
         """Initialize the GraphRAG instance with required models and configurations."""
         self.llm = OllamaLLM(model='llama3.1')
 
@@ -24,6 +26,7 @@ class GraphRAG:
         self.documents = [Document(page_content=self.text)]
         llm_transformer = LLMGraphTransformer(llm=self.llm)
         graph_documents = llm_transformer.convert_to_graph_documents(self.documents)
+        self.logger.info("LOADED TEXT")
 
     def build_graph(self):
         llm_transformer_filtered = LLMGraphTransformer(
@@ -48,6 +51,7 @@ class GraphRAG:
                     edge.target.id,
                     relation=edge.type,
                 )
+        self.logger.info("BUILT GRAPH")
             
     def build_graph_chain(self):
         self.chain = GraphQAChain.from_llm(
@@ -55,7 +59,12 @@ class GraphRAG:
                 graph=self.graph, 
                 verbose=True
             )
+        self.logger.info("BUILT CHAIN")
+            
         
     def test_query(self):
         question = """Who is Marie Curie?"""
         self.chain.run(question)
+        self.logger.info("QUERY RAN")
+        self.logger.info("LOADED TEXT")
+

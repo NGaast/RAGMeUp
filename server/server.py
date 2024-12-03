@@ -38,6 +38,8 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 load_bashrc()
 load_dotenv()
 
+graph_test = GraphRAG(logger)
+
 # Instantiate the RAG Helper class based on the environment configuration
 if any(os.getenv(key) == "True" for key in ["use_openai", "use_gemini", "use_azure", "use_ollama"]):
     logger.info("Instantiating the cloud RAG helper.")
@@ -45,6 +47,14 @@ if any(os.getenv(key) == "True" for key in ["use_openai", "use_gemini", "use_azu
 else:
     logger.info("Instantiating the local RAG helper.")
     raghelper = RAGHelperLocal(logger)
+
+@app.route("/test", methods=['GET'])
+def test():
+    graph_test.load_text()
+    graph_test.build_graph()
+    graph_test.build_graph_chain()
+    graph_test.test_query()
+    
 
 @app.route("/add_document", methods=['POST'])
 def add_document():
