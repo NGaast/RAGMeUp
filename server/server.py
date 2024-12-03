@@ -5,7 +5,8 @@ import os
 from RAGHelper_cloud import RAGHelperCloud
 from RAGHelper_local import RAGHelperLocal
 from pymilvus import Collection, connections
-from werkzeug.utils import secure_filename
+from GraphRAG import GraphRAG
+
 
 def load_bashrc():
     """
@@ -37,6 +38,8 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 load_bashrc()
 load_dotenv()
 
+test_graph = GraphRAG(logger)
+
 # Instantiate the RAG Helper class based on the environment configuration
 if any(os.getenv(key) == "True" for key in ["use_openai", "use_gemini", "use_azure", "use_ollama"]):
     logger.info("Instantiating the cloud RAG helper.")
@@ -45,6 +48,13 @@ else:
     logger.info("Instantiating the local RAG helper.")
     raghelper = RAGHelperLocal(logger)
 
+
+@app.route("/test", methods=['GET'])
+def test():
+    test_graph.load_text()
+    test_graph.build_graph()
+    test_graph.build_graph_chain()
+    test_graph.test_query()
 
 @app.route("/add_document", methods=['POST'])
 def add_document():
@@ -57,25 +67,13 @@ def add_document():
     Returns:
         JSON response with the filename and HTTP status code 200.
     """
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part in the request"}), 400
-    
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({"error": "No file selected"}), 400
-    
-    if file:
-        filename = secure_filename(file.filename)
-        
-        logger.info(f"Adding document {filename}")
-        data_dir = os.getenv("data_directory")
-        location = f"{data_dir}/{file.filename}"
+    json_data = request.get_json()
+    filename = json_data.get('filename')
 
-        # Copy over file
-        file.save(location)
-        raghelper.add_document(location)
-    else:
-        return jsonify({"error": "File is required"}), 400
+    if not filename:
+        return jsonify({"error": "Filename is required"}), 400
+    logger.info(f"Adding document {filename}")
+    raghelper.add_document(filename)
 
     return jsonify({"filename": filename}), 200
 
