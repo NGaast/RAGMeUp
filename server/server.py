@@ -5,7 +5,7 @@ import os
 from RAGHelper_cloud import RAGHelperCloud
 from RAGHelper_local import RAGHelperLocal
 from pymilvus import Collection, connections
-from server.GraphRAGHelper import GraphRAG
+from GraphRAG import GraphRAG
 
 
 def load_bashrc():
