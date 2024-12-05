@@ -38,6 +38,8 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 load_bashrc()
 load_dotenv()
 
+logger.info('SERVER STARTED UP')
+
 # Instantiate the RAG Helper class based on the environment configuration
 if any(os.getenv(key) == "True" for key in ["use_openai", "use_gemini", "use_azure", "use_ollama"]):
     logger.info("Instantiating the cloud RAG helper.")
