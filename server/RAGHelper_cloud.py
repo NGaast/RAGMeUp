@@ -146,7 +146,7 @@ class RAGHelperCloud(RAGHelper):
             tuple: A tuple containing the conversation thread and the reply.
         """
         fetch_new_documents = self.should_fetch_new_documents(user_query, history)
-        needs_graph = self.graph_rag.needs_graph()
+        needs_graph = self.graph_rag.needs_graph(user_query)
 
         thread = self.create_interaction_thread(history, fetch_new_documents)
         # Create prompt from prompt template
