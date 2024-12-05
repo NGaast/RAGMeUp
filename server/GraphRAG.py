@@ -35,8 +35,9 @@ class GraphRAG:
         return {"question": RunnablePassthrough()} | graph_needed_llm_chain
     
     def needs_graph(self, user_query):
-        response = self.graph_ask_chain.invoke(user_query)
-        return True if response == 'yes' else False
+        return True
+        # response = self.graph_ask_chain.invoke(user_query)
+        # return True if response == 'yes' else False
     
     def build_graph_on_docs(self, context):
         documents = [Document(page_content=context)]
