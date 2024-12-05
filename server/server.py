@@ -5,7 +5,7 @@ import os
 from RAGHelper_cloud import RAGHelperCloud
 from RAGHelper_local import RAGHelperLocal
 from pymilvus import Collection, connections
-from GraphRAG import GraphRAG
+from server.GraphRAGHelper import GraphRAG
 
 
 def load_bashrc():
@@ -47,14 +47,6 @@ if any(os.getenv(key) == "True" for key in ["use_openai", "use_gemini", "use_azu
 else:
     logger.info("Instantiating the local RAG helper.")
     raghelper = RAGHelperLocal(logger)
-
-@app.route("/test", methods=['GET'])
-def test():
-    graph_test.load_text()
-    graph_test.build_graph()
-    graph_test.build_graph_chain()
-    graph_test.test_query()
-    
 
 @app.route("/add_document", methods=['POST'])
 def add_document():

@@ -38,14 +38,6 @@ class HomeController @Inject()(
       })
   }
 
-  def test() = Action.async { implicit request: Request[AnyContent] =>
-    ws
-      .url(s"${config.get[String]("server_url")}/test")
-      .withRequestTimeout(5 minutes)
-      .get()
-  }
-
-
   def search() = Action.async { implicit request: Request[AnyContent] =>
     val json = request.body.asJson.getOrElse(Json.obj()).as[JsObject]
     val query = (json \ "query").as[String]

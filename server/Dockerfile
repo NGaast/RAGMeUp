@@ -7,6 +7,8 @@ RUN mkdir /ragmeup
 RUN mkdir /data
 WORKDIR /ragmeup
 
+COPY .env.template .env
+
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 RUN pip3 install gunicorn
@@ -26,3 +28,5 @@ RUN chown -R $UID:$GID /ragmeup
 RUN chown -R $UID:$GID /data
 
 USER $UNAME
+
+RUN git clone https://github.com/NGaast/RAGMeUp.git

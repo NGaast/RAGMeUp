@@ -12,6 +12,7 @@ from provenance import (DocumentSimilarityAttribution,
                         compute_llm_provenance_cloud,
                         compute_rerank_provenance)
 from RAGHelper import RAGHelper
+from GraphRAG import GraphRAG
 
 
 def combine_results(inputs: dict) -> dict:
@@ -40,6 +41,7 @@ class RAGHelperCloud(RAGHelper):
         self.logger = logger
         self.llm = self.initialize_llm()
         self.embeddings = self.initialize_embeddings()
+        self.graph_rag = GraphRAG(self.llm, logger)
 
         # Load the data
         self.load_data()
@@ -144,6 +146,7 @@ class RAGHelperCloud(RAGHelper):
             tuple: A tuple containing the conversation thread and the reply.
         """
         fetch_new_documents = self.should_fetch_new_documents(user_query, history)
+        needs_graph = self.graph_rag.needs_graph()
 
         thread = self.create_interaction_thread(history, fetch_new_documents)
         # Create prompt from prompt template
@@ -168,6 +171,22 @@ class RAGHelperCloud(RAGHelper):
                     ))
                 | combine_results
             )
+        elif fetch_new_documents and needs_graph:
+            self.logger.info("NEED NEW DOCUMENTS NEEDS GRAPH")
+            context_retriever = self.ensemble_retriever if self.rerank else self.rerank_retriever
+            retriever_chain = {
+                "docs": context_retriever,
+                "context": context_retriever | RAGHelper.format_documents,
+                "question": RunnablePassthrough()
+            }
+            # TODO: ADD OUR CHAIN FOR CREATING GRAPH
+            rag_chain = (retriever_chain 
+                        | self.graph_rag.build_graph_on_docs)
+        elif fetch_new_documents and not needs_graph:
+            self.logger.info("DO NOT NEED NEW DOCUMENTS NEEDS GRAPH")
+            retriever_chain = {"question": RunnablePassthrough()}
+            # TODO: ADD OUR CHAIN FOR CREATING GRAPH
+            rag_chain = retriever_chain | self.graph_rag.build_graph_on_docs
         else:
             retriever_chain = {"question": RunnablePassthrough()}
             llm_chain = prompt | self.llm | StrOutputParser()
