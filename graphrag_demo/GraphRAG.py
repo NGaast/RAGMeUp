@@ -1,6 +1,7 @@
 import os
-from langchain_experimental.graph_transformers import LLMGraphTransformer
 import networkx as nx
+import json_repair
+from langchain_experimental.graph_transformers import LLMGraphTransformer
 from langchain.chains import GraphQAChain
 from langchain_core.documents import Document
 from langchain_community.graphs.networkx_graph import NetworkxEntityGraph
@@ -37,13 +38,13 @@ class GraphRAG:
         return {"question": RunnablePassthrough()} | graph_needed_llm_chain
     
     # Build chain to normalize graph using LLM.
-    def build_normalize_graph_chain():
+    def build_normalize_graph_chain(self):
         normalize_graph_thread = [
             ('system', os.getenv('needs_graph_ask_instruction')),
             ('human', os.getenv('needs_graph_ask_question'))
         ]
         normalize_graph_prompt = ChatPromptTemplate.from_messages(normalize_graph_thread)
-        normalize_graph_llm_chain = normalize_graph_prompt | llm
+        normalize_graph_llm_chain = normalize_graph_prompt | self.llm
         return {"network": RunnablePassthrough()} | normalize_graph_llm_chain
 
     # Check if user needs graph based on question
